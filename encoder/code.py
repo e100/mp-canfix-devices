@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2018 Kattni Rembor for Adafruit Industries
+#
+# SPDX-License-Identifier: MIT
 import canfix.utils
 import time
 import rotaryio
@@ -73,16 +76,16 @@ def return_data(enc1,enc2,btn):
         data.append(0x00)
     data.extend(valueData)
     return data
-    
+
 count = 0
 while True:
     time.sleep(0.1)
     switch1.update()
     switch2.update()
-    
+
     position1 = encoder1.position
     position2 = encoder2.position
-    
+
     if switch1.fell:
         #message = Message(id=arbitration_id, data=b"pressed", extended=True)
         buttons[0] = True
@@ -109,18 +112,22 @@ while True:
         or (position2 != 0 or last_position2 != 0) \
         or count > 10 \
         or button_change:
-            
+
         count = 0
         encoder1.position = 0
         encoder2.position = 0
-        
+
         button_change = False
         #baro = baro + position * 0.01
         print(f"Position1: {position1}, Position2: {position2}")#, Sending BARO: {baro}")
         message = Message(id=arbitration_id, data=return_data(position1,position2,buttons), extended=False)
         #message = Message(id=0x1234ABCD, data=b"pressed", extended=True)
-        send_success = can_bus.send(message)
+        try:
+            send_success = can_bus.send(message)
+        except:
+            can_bus.restart()
         #print(f"Send pressed position: {position1}:", send_success)
     last_position1 = position1
     last_position2   = position2
     count += 1
+
