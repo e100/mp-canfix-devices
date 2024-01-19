@@ -111,9 +111,9 @@ while True:
     for c, enc in enumerate(encoder):
         encval[c] = enc.position
         if encval[c] > 2:
-            encval[c] = encval[c] ** 2
+            encval[c] = encval[c] ** 1.8
         elif encval[c] < -2:
-            encval[c] = 0 - (encval[c] ** 2)
+            encval[c] = 0 - (abs(encval[c]) ** 1.8)
         if encval[c] != 0 or prevenc[c] != 0:
             change[ c // 2 ] = True
     
