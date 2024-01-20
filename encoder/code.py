@@ -10,24 +10,14 @@ from adafruit_debouncer import Debouncer
 from digitalio import DigitalInOut
 from adafruit_mcp2515.canio import Message, RemoteTransmissionRequest
 from adafruit_mcp2515 import MCP2515 as CAN
+import neopixel
+
+pixel = neopixel.NeoPixel(board.NEOPIXEL, 1)
+
+pixel.brightness = 0.05
+pixel.fill((255, 0, 0))
 
 ### Configure the pins and encoders here:
-config = {
-    "set1": {
-        "dataid": 0x300,
-        "nodespecific": False,
-        "inputs": [ { "enc1": board.D9,  "enc2": board.D10, "divisor": 2, "btn": board.D4 },
-                    { "enc1": board.D11, "enc2": board.D12, "divisor": 2, "btn": board.D5 }
-        ] 
-    },
-    "set2": {
-        "dataid": 0x301,
-        "nodespecific": False,
-        "inputs": [ { "enc1": board.A0,  "enc2": board.A1,  "divisor": 2, "btn": board.D24  },
-                    { "enc1": board.A2,  "enc2": board.A3,  "divisor": 2, "btn": board.D25 }
-        ]
-    }
-}
 
 BAUD = 250000
 NODE_SPECIFIC = False #True
@@ -95,10 +85,11 @@ def return_data(data_type, data_code, multiplier, index, enc1, enc2, btn):
         data.append(0x00)
     data.extend(valueData)
     return data
-
+success = 0
 count = 0
 while True:
     time.sleep(0.1)
+    pixel.brightness = 0
     for c, sw in enumerate(switch):
         sw.update()
         if sw.fell:
@@ -107,7 +98,7 @@ while True:
         if sw.rose:
             btnval[c] = False
             change[ c // 2 ] = True
-            
+
     for c, enc in enumerate(encoder):
         encval[c] = enc.position
         if encval[c] > 2:
@@ -116,35 +107,42 @@ while True:
             encval[c] = int(0 - (abs(encval[c]) ** 1.8))
         if encval[c] != 0 or prevenc[c] != 0:
             change[ c // 2 ] = True
-    
+
     #if last_position is None or position != last_position:
     for c,ch in enumerate(change):
         #print(f"change: {c} count:{count}")
-        
+
         if  ch or \
             count > 10:
             prevenc[ c * 2 ] = 0
             prevenc[ (c * 2 ) + 1 ] = 0
-            
+
             change[ c ] = False
             encoder[ c * 2 ].position = 0
-            encoder[ (c * 2 ) + 1 ].position = 0            
+            encoder[ (c * 2 ) + 1 ].position = 0
         #baro = baro + position * 0.01
-            
+
         # TODO Adjust index here
             if NODE_SPECIFIC:
                 arbitration_id = NODE_ID + NODE_SPECIFIC_MSGS
             else:
                 arbitration_id = DATA_ID
             index = c * 32 # 32 64 etc, total of 8 starting with 0
-            code = (index // 32) + 0x0C    
+            code = (index // 32) + 0x0C
             print(f"Index: {index} Position1: {encval[c * 2]}, Position2: {encval[(c * 2) + 1]}")
             message = Message(id=arbitration_id, data=return_data(DATA_TYPE, code, DATA_MULTIPLIER, index, encval[c * 2],encval[(c * 2) + 1],[btnval[c * 2], btnval[(c * 2) + 1]]), extended=False)
 
             try:
                 send_success = can_bus.send(message)
             except:
+                pixel.fill((255, 0, 0))
+                success = 0
                 can_bus.restart()
+            else:
+                success += 1
+                if success > 5:
+                    pixel.fill((0, 255, 0))
+            pixel.brightness = 0.05
     if count > 10:
         count = 0
     count += 1
