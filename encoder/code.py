@@ -32,14 +32,14 @@ prevenc = [None] * len(encoder)
 encval = [None] * len(encoder)
 btnval = [None] * len(encoder)
 change = [None] * int(len(encoder) / 2)
-encoder[0] = rotaryio.IncrementalEncoder(board.D9,  board.D10, divisor=2 )
+encoder[0] = rotaryio.IncrementalEncoder(board.D24,  board.D25, divisor=4 )
 buttons[0] =      digitalio.DigitalInOut(board.D4)
-encoder[1] = rotaryio.IncrementalEncoder(board.D11, board.D12, divisor=2 )
-buttons[1] =      digitalio.DigitalInOut(board.D5)
+encoder[1] = rotaryio.IncrementalEncoder(board.RX , board.TX, divisor=2 )
+buttons[1] =      digitalio.DigitalInOut(board.D6)
 encoder[2] = rotaryio.IncrementalEncoder(board.A0,  board.A1,  divisor=2 )
-buttons[2] =      digitalio.DigitalInOut(board.D24)
+buttons[2] =      digitalio.DigitalInOut(board.D9)
 encoder[3] = rotaryio.IncrementalEncoder(board.A2,  board.A3,  divisor=2 )
-buttons[3] =      digitalio.DigitalInOut(board.D25)
+buttons[3] =      digitalio.DigitalInOut(board.D5)
 
 
 for c, btn in enumerate(buttons):
@@ -146,4 +146,3 @@ while True:
     if count > 10:
         count = 0
     count += 1
-
