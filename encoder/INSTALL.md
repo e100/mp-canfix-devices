@@ -1,6 +1,6 @@
 Plug the CircuitPython on Feather M4 CAN into your computer
 
-Press the reset button twice
+Press and hold boot button then press the reset button twice, a drive should appear on your computer
 
 Download the U2F file and copy it to the drive
 https://learn.adafruit.com/adafruit-feather-m4-can-express/circuitpython-on-feather-m4-can
